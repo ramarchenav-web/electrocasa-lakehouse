@@ -1,1 +1,8 @@
+bundle:
+  name: electrocasa-lakehouse
 
+targets:
+  dev:
+    default: true
+
+  prod:
