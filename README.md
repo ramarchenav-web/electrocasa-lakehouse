@@ -1,0 +1,2 @@
+# electrocasa-lakehouse
+Proyecto integrador
