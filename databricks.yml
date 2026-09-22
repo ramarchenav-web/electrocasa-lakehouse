@@ -1,6 +1,9 @@
 bundle:
   name: electrocasa-lakehouse
 
+include:
+  - resources/*.yml
+
 targets:
   dev:
     default: true
