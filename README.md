@@ -35,3 +35,6 @@ En caso de necesitar eliminar toda la configuracion, usar el siguiente codigo
 `%sql`  
 `DROP CATALOG electrocasa CASCADE;`   
 ___
+## Ingesta BRONZE
+Para crear el secret scope y los secrets seguir los pasos descritos:
+https://docs.databricks.com/aws/en/security/secrets/?language=Databricks%C2%A0SDK%C2%A0for%C2%A0Python 
