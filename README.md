@@ -47,15 +47,37 @@ electrocasa.auditoria
 
 Se implementa una arquitectura Medallion compuesta por las capas Bronze, Silver y Gold. Adicionalmente se ha creado un esquema de Auditoria para control de calidad.
 
-Evidencia de Pipeline ejecutado
+Evidencia de Pipeline ejecutado  
 ![image_1790189080151.png](./image_1790189080151.png "image_1790189080151.png")
 
 ## Ejecución del Job
 
 Se implementó un Lakeflow Job encargado de ejecutar el flujo completo de procesamiento de datos. El job inicia con la carga de datos en Bronze, continúa con las transformaciones de Silver y finaliza con la generación de las tablas analíticas Gold.
 
-La ejecución se dispara automáticamente ante la llegada de nuevos archivos al Volume de landing y cuenta con dependencias entre tareas, reintentos automáticos y notificaciones por correo en caso de error. La siguiente imagen muestra una ejecución exitosa del proceso de punta a punta. 
+La ejecución se dispara automáticamente ante la llegada de nuevos archivos al Volume de landing.  
+![image_1790198338902.png](./image_1790198338902.png "image_1790198338902.png")
+Cuenta con dependencias entre tareas, reintentos automáticos por task y notificaciones por correo en caso iniciar el job o por error del job completo.  
+![image_1790198703034.png](./image_1790198703034.png "image_1790198703034.png")
+No se envia notificaciones por task para evitar caer en spam
+
+La siguiente imagen muestra una ejecución exitosa del proceso de punta a punta. 
 ![image_1790191072004.png](./image_1790191072004.png "image_1790191072004.png")
+## Historizacion de datos empleados
+Se implementó Slowly Changing Dimension Type 2 (SCD2)
+para preservar el historial de cambios de los empleados.
+
+Los cambios del cargo del empleado generan una nueva versión del registro,
+manteniendo las versiones anteriores con:
+
+- fecha_inicio
+- fecha_fin
+- es_actual
+- version_scd
+
+La tabla historizada se almacena en:
+electrocasa.auditoria.empleados_cargo_scd2
+
+SOLO se trabajó para el **cargo** de los empleados, dado que la fuente de datos procede de un StreamEvent o Sistema con eventos definidos en el caso de cambiar la sucursal o salario estos ya vienen en la fuente de origen de datos con los eventos "transferencia" y "cambio_salario" respectivamente.
 
 ## Calidad de Datos
 
@@ -96,12 +118,15 @@ Permisos:
 - Auditoria: acceso a Gold y Auditoria.
 
 Datos sensibles protegidos:
-
 - dni
-- salario
+- salario  
 
+Estos datos no podran ser vistos si el usuario pertenece a un grupo diferente al de "ingenieria"  
 Se implementaron funciones desde  
 `src/electrocasa/transformations/masking_columns.py`
+
+![image_1790197478915.png](./image_1790197478915.png "image_1790197478915.png")
+
 ## Consideraciones de Costos
 
 Se ha desarrollado en Databricks Free Edition, por lo que no fue posible utilizar recursos de cómputo dedicados como Job Clusters o Serverless Compute. Sin embargo, desde una perspectiva de diseño para un entorno productivo, se consideró la siguiente estrategia:
@@ -115,7 +140,26 @@ Se ha desarrollado en Databricks Free Edition, por lo que no fue posible utiliza
 - Ingesta JDBC de Tracking de Envíos:
   Se utilizaría Serverless Compute debido al bajo volumen de datos y a la necesidad de consultas ocasionales bajo demanda, evitando mantener recursos dedicados activos.
 
-Esta estrategia busca minimizar costos operativos manteniendo la capacidad de escalar automáticamente ante incrementos de volumen y evitando recursos ociosos cuando no existen ejecuciones activas.
+Esta estrategia busca minimizar costos operativos manteniendo la capacidad de escalar automáticamente ante incrementos de volumen y evitando recursos ociosos cuando no existen ejecuciones activas.  
+
+##Despliegue  
+Se configuraron dos ambientes:  
+dev: ambiente de desarrollo y pruebas.
+prod: ambiente productivo.
+**Despliegue en DEV**  
+Resultado:  
+Target: dev  
+Pipeline desplegado: electrocasa-pipeline-dev  
+Job desplegado: electrocasa_job  
+Estado: Finished "deploy" on "dev" target successfully  
+
+**Despliegue en PROD**  
+Resultado:  
+Target: prod  
+Pipeline desplegado: electrocasa-pipeline-prod  
+Job desplegado: electrocasa_job  
+Estado: Finished "deploy" on "prod" target successfully  
+![image_1790196120694.png](./image_1790196120694.png "image_1790196120694.png")
 ___
 ## Otras observaciones
 ### Sobre 00_setup  
@@ -155,3 +199,6 @@ En caso de necesitar eliminar toda la configuracion, usar el siguiente codigo
 #### Sobre la Ingesta de Supabase
 Se creo el secret scope y los secrets seguir los pasos descritos:
 https://docs.databricks.com/aws/en/security/secrets/?language=Databricks%C2%A0SDK%C2%A0for%C2%A0Python 
+
+ademas se tuvo que crear una conneción como PostgreSQL
+![image_1790198960611.png](./image_1790198960611.png "image_1790198960611.png")

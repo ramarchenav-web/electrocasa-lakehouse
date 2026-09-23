@@ -3,7 +3,7 @@ spark.sql("""
 CREATE OR REPLACE FUNCTION electrocasa.silver.mask_dni(dni STRING)
 RETURNS STRING
 RETURN CASE
-    WHEN is_account_group_member('auditoria') THEN dni
+    WHEN is_account_group_member('ingenieria') THEN dni
     ELSE concat('***-***-', right(dni, 3))
 END
 """)
@@ -19,7 +19,7 @@ spark.sql("""
 CREATE OR REPLACE FUNCTION electrocasa.silver.mask_salario(salario DECIMAL(12,2))
 RETURNS DECIMAL(12,2)
 RETURN CASE
-    WHEN is_account_group_member('auditoria') THEN salario
+    WHEN is_account_group_member('ingenieria') THEN salario
     ELSE round(salario, -3)
 END
 """)
