@@ -1,13 +1,30 @@
-# Pipeline ElectroCasa
 resources:
   pipelines:
     electrocasa_pipeline:
-      name: electrocasa-bronze-${bundle.target}
+      name: electrocasa-pipeline-${bundle.target}
       catalog: electrocasa
       target: bronze
-      libraries:
-        - glob:
-            include: ../src/electrocasa/transformations/resenas_bronze_sdp.py
+      development: false
       serverless: true
-      development: true
       channel: current
+
+      libraries:
+        # Bronze
+        - file:
+            path: ../src/electrocasa/transformations/bronze.py
+
+        # Silver
+        - file:
+            path: ../src/electrocasa/transformations/silver_ventas.py
+        - file:
+            path: ../src/electrocasa/transformations/silver_catalogo_productos.py
+        - file:
+            path: ../src/electrocasa/transformations/silver_empleados.py
+        - file:
+            path: ../src/electrocasa/transformations/silver_devoluciones.py
+        - file:
+            path: ../src/electrocasa/transformations/silver_tracking_envios.py
+
+        # Historización
+        - file:
+            path: ../src/electrocasa/transformations/scd2_empleados.py

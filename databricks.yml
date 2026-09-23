@@ -9,7 +9,12 @@ targets:
     default: true
     workspace:
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/dev
+    resources:
+      pipelines:
+        electrocasa_pipeline:
+          development: true
 
   prod:
+    
     workspace:
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/prod

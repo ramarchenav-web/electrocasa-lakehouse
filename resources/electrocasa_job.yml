@@ -1,1 +1,118 @@
 # Job ElectroCasa
+resources:
+  jobs:
+    electrocasa_job:
+      name: electrocasa_job
+      email_notifications:
+        on_start:
+          - randy.marchena@gmail.com
+        on_failure:
+          - randy.marchena@gmail.com
+      trigger:
+        pause_status: UNPAUSED
+        file_arrival:
+          url: /Volumes/electrocasa/bronze/vol_landing/
+      tasks:
+        - task_key: bronze_ingestion
+          spark_python_task:
+            python_file: /Workspace/Users/ramarchenav@gmail.com/electrocasa-lakehouse/src/electrocasa/transformations/bronze.py
+          max_retries: 2
+          min_retry_interval_millis: 300000
+          disable_auto_optimization: false
+          environment_key: Default
+        - task_key: silver_catalogo
+          depends_on:
+            - task_key: bronze_ingestion
+          spark_python_task:
+            python_file: /Workspace/Users/ramarchenav@gmail.com/electrocasa-lakehouse/src/electrocasa/transformations/silver_catalogo_productos.py
+          environment_key: Default
+        - task_key: silver_devoluciones
+          depends_on:
+            - task_key: bronze_ingestion
+          spark_python_task:
+            python_file: /Workspace/Users/ramarchenav@gmail.com/electrocasa-lakehouse/src/electrocasa/transformations/silver_devoluciones.py
+          max_retries: 2
+          min_retry_interval_millis: 300000
+          disable_auto_optimization: false
+          environment_key: Default
+        - task_key: gold_devoluciones_producto
+          depends_on:
+            - task_key: silver_devoluciones
+            - task_key: silver_catalogo
+          sql_task:
+            query:
+              query_id: 184ef60e-a9ea-4af4-9a66-90de788407c3
+            warehouse_id: 364fde1423891e04
+          max_retries: 2
+          min_retry_interval_millis: 300000
+        - task_key: silver_empleados
+          depends_on:
+            - task_key: bronze_ingestion
+          spark_python_task:
+            python_file: /Workspace/Users/ramarchenav@gmail.com/electrocasa-lakehouse/src/electrocasa/transformations/silver_empleados.py
+          max_retries: 2
+          min_retry_interval_millis: 300000
+          disable_auto_optimization: false
+          environment_key: Default
+        - task_key: gold_dotacion_activa
+          depends_on:
+            - task_key: silver_empleados
+          sql_task:
+            query:
+              query_id: 9f049b2f-1e09-40fd-93a8-9b7123fcbf1d
+            warehouse_id: 364fde1423891e04
+          max_retries: 2
+          min_retry_interval_millis: 300000
+        - task_key: scd2_empleados
+          depends_on:
+            - task_key: silver_empleados
+          spark_python_task:
+            python_file: /Workspace/Users/ramarchenav@gmail.com/electrocasa-lakehouse/src/electrocasa/transformations/scd2_empleados.py
+          max_retries: 2
+          min_retry_interval_millis: 300000
+          disable_auto_optimization: false
+          environment_key: Default
+        - task_key: silver_tracking
+          depends_on:
+            - task_key: bronze_ingestion
+          spark_python_task:
+            python_file: /Workspace/Users/ramarchenav@gmail.com/electrocasa-lakehouse/src/electrocasa/transformations/silver_tracking_envios.py
+          max_retries: 2
+          min_retry_interval_millis: 300000
+          disable_auto_optimization: false
+          environment_key: Default
+        - task_key: silver_ventas
+          depends_on:
+            - task_key: bronze_ingestion
+          spark_python_task:
+            python_file: /Workspace/Users/ramarchenav@gmail.com/electrocasa-lakehouse/src/electrocasa/transformations/silver_ventas.py
+          max_retries: 2
+          min_retry_interval_millis: 300000
+          disable_auto_optimization: false
+          environment_key: Default
+        - task_key: gold_ranking_productos
+          depends_on:
+            - task_key: silver_ventas
+            - task_key: silver_catalogo
+          sql_task:
+            query:
+              query_id: 3383af5f-ae5f-4b0d-8da4-73402a606888
+            warehouse_id: 364fde1423891e04
+          max_retries: 2
+          min_retry_interval_millis: 300000
+        - task_key: gold_ventas_sucursal_mes
+          depends_on:
+            - task_key: silver_ventas
+          sql_task:
+            query:
+              query_id: 0c5b4d78-f88b-44b6-9d27-9a2e6fb3002a
+            warehouse_id: 364fde1423891e04
+          max_retries: 2
+          min_retry_interval_millis: 300000
+      queue:
+        enabled: true
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "5"
+      performance_target: PERFORMANCE_OPTIMIZED
