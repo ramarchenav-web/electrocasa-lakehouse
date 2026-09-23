@@ -199,6 +199,6 @@ En caso de necesitar eliminar toda la configuracion, usar el siguiente codigo
 #### Sobre la Ingesta de Supabase
 Se creo el secret scope y los secrets seguir los pasos descritos:
 https://docs.databricks.com/aws/en/security/secrets/?language=Databricks%C2%A0SDK%C2%A0for%C2%A0Python 
-
-ademas se tuvo que crear una conneción como PostgreSQL
+Por medio de la plataforma de DMC al momento de entregar la evaluación en los comentarios se han proporcionado las credenciales necesarias para los dos secrets.  
+Con las cuales se creo la conneción como PostgreSQL
 ![image_1790198960611.png](./image_1790198960611.png "image_1790198960611.png")
