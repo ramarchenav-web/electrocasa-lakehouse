@@ -22,6 +22,10 @@ df_base = (
         "dni",
         F.trim(F.col("dni"))
     )
+    .withColumn(
+        "salario",
+        F.col("salario").cast("decimal(12,2)")
+    )
 )
 
 # ============================================================
@@ -197,8 +201,12 @@ cuarentena_salario = (
 
 df_validacion = (
     df_validacion
-    .filter(F.col("salario").isNotNull())
-    .filter(F.col("salario") > 0)
+    .filter(
+        F.col("salario").isNotNull()
+    )
+    .filter(
+        F.col("salario") > 0
+    )
 )
 
 # ============================================================
@@ -279,3 +287,33 @@ df_cuarentena = (
 # ============================================================
 
 df_empleados_validos = df_validacion
+
+# ============================================================
+# GUARDAR CUARENTENA
+# ============================================================
+
+(
+    df_cuarentena
+    .write
+    .format("delta")
+    .mode("overwrite")
+    .option("overwriteSchema", "true")
+    .saveAsTable(
+        "electrocasa.auditoria.empleados_cuarentena"
+    )
+)
+
+# ============================================================
+# GUARDAR SILVER
+# ============================================================
+
+(
+    df_empleados_validos
+    .write
+    .format("delta")
+    .mode("overwrite")
+    .option("overwriteSchema", "true")
+    .saveAsTable(
+        "electrocasa.silver.empleados_silver"
+    )
+)
