@@ -11,7 +11,7 @@ from pyspark.sql.window import Window
 # ============================================================
 
 df_empleados = spark.table(
-    "electrocasa.silver.empleados_validos"
+    "electrocasa.silver.empleados_silver"
 )
 
 # ============================================================
